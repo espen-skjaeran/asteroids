@@ -32,7 +32,7 @@ dependencies {
     implementation 'org.glassfish.jersey.inject:jersey-hk2:2.27'
     implementation 'javax.activation:javax.activation-api:1.2.0'
     // Use JUnit test framework
-    testImplementation 'junit:junit:4.12'
+    testImplementation 'junit:junit:4.13.2'
     testImplementation 'org.hamcrest:hamcrest-library:1.3'
 }
 
