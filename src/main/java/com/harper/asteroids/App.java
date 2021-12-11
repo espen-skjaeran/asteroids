@@ -3,7 +3,6 @@
  */
 package com.harper.asteroids;
 
-import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.harper.asteroids.model.CloseApproachData;
 import com.harper.asteroids.model.Feed;
@@ -37,16 +36,13 @@ public class App {
 
     protected static String API_KEY = "DEMO_KEY";
 
-    private Client client;
+    private final Client client;
 
-    private ObjectMapper mapper = new ObjectMapper();
+    private final ObjectMapper mapper = new ObjectMapper();
 
     public App() {
-
-
         ClientConfig configuration = new ClientConfig();
         client = ClientBuilder.newClient(configuration);
-        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
     }
 
     /**
@@ -63,9 +59,7 @@ public class App {
                 .get();
         System.out.println("Got response: " + response);
         if(response.getStatus() == Response.Status.OK.getStatusCode()) {
-            ObjectMapper mapper = new ObjectMapper();
             String content = response.readEntity(String.class);
-
 
             try {
                 Feed neoFeed = mapper.readValue(content, Feed.class);
@@ -80,12 +74,12 @@ public class App {
 
                     if(closestPass.isEmpty()) continue;
 
-                    System.out.println(String.format("%s       %12.3f  %s    %s",
+                    System.out.printf("%s       %12.3f  %s    %s%n",
                             (neo.isPotentiallyHazardous() ? "!!!" : " - "),
                             closestPass.get().getMissDistance().getKilometers(),
                             closestPass.get().getCloseApproachDateTime(),
                             neo.getName()
-                            ));
+                            );
                 }
             } catch (IOException e) {
                 System.err.println("Failed scanning for asteroids: " + e);

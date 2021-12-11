@@ -20,9 +20,9 @@ import java.util.stream.Collectors;
  */
 public class ApproachDetector {
     private static final String NEO_URL = "https://api.nasa.gov/neo/rest/v1/neo/";
-    private List<String> nearEarthObjectIds;
-    private Client client;
-    private ObjectMapper mapper = new ObjectMapper();
+    private final List<String> nearEarthObjectIds;
+    private final Client client;
+    private final ObjectMapper mapper = new ObjectMapper();
 
     public ApproachDetector(List<String> ids) {
         this.nearEarthObjectIds = ids;
@@ -58,8 +58,8 @@ public class ApproachDetector {
     /**
      * Get the closest passing.
      * @param neos the NearEarthObjects
-     * @param limit
-     * @return
+     * @param limit specifies the size of the returned list
+     * @return a list of the closest passing
      */
     public static List<NearEarthObject> getClosest(List<NearEarthObject> neos, int limit) {
         //TODO: Should ignore the passes that are not today/this week.
@@ -69,5 +69,4 @@ public class ApproachDetector {
                 .limit(limit)
                 .collect(Collectors.toList());
     }
-
 }
