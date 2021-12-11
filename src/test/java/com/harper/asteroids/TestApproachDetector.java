@@ -38,11 +38,11 @@ public class TestApproachDetector {
 
         List<NearEarthObject> neos = List.of(neo1, neo2);
 
-        List<NearEarthObject> filtered = approachDetector.getClosestInCurrentWeek(neos, 1);
+        List<NearEarthObject> filtered = approachDetector.getFilteredAndSortedApproaches(neos, 1);
         assertEquals(1, filtered.size());
         assertEquals(neo2, filtered.get(0));
 
-        filtered = approachDetector.getClosestInCurrentWeek(neos, 2);
+        filtered = approachDetector.getFilteredAndSortedApproaches(neos, 2);
         assertEquals(2, filtered.size());
         assertEquals(neo2, filtered.get(0));
         assertEquals(neo1, filtered.get(1));
@@ -60,7 +60,7 @@ public class TestApproachDetector {
 
         List<NearEarthObject> neos = List.of(neo1, neo2);
 
-        List<NearEarthObject> filtered = approachDetector.getClosestInCurrentWeek(neos, 2);
+        List<NearEarthObject> filtered = approachDetector.getFilteredAndSortedApproaches(neos, 2);
         assertEquals(1, filtered.size());
         assertEquals(neo1, filtered.get(0));
     }

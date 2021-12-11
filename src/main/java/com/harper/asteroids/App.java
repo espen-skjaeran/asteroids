@@ -24,7 +24,7 @@ import javax.ws.rs.core.Response;
  * https://api.nasa.gov/neo/rest/v1/feed?start_date=START_DATE&end_date=END_DATE&api_key=API_KEY
  * See documentation on the Asteroids - NeoWs API at https://api.nasa.gov/
  *
- * Prints the 10 closest
+ * Prints the 10 closest in current week
  *
  * Risk of getting throttled if we don't sign up for own key on https://api.nasa.gov/
  * Set environment variable 'API_KEY' to override.
@@ -79,7 +79,7 @@ public class App {
                 Feed neoFeed = mapper.readValue(content, Feed.class);
                 ApproachDetector approachDetector = new ApproachDetector(dateUtils, apiKey);
 
-                List<NearEarthObject> closest =  approachDetector.getClosestApproaches(10, neoFeed.getAllObjectIds());
+                List<NearEarthObject> closest =  approachDetector.getClosestApproachesInCurrentWeek(10, neoFeed.getAllObjectIds());
                 System.out.println("Hazard?   Distance(km)    When                             Name");
                 System.out.println("----------------------------------------------------------------------");
                 for(NearEarthObject neo: closest) {

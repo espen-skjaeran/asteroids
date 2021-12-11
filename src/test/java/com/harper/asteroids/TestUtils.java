@@ -3,16 +3,18 @@ package com.harper.asteroids;
 import com.harper.asteroids.model.CloseApproachData;
 import com.harper.asteroids.model.Distances;
 
-import java.util.Calendar;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 
 public class TestUtils {
 
     public CloseApproachData createCloseApproachData(int addDays, Double distance) {
 
-        Calendar cal = Calendar.getInstance();
-        cal.add(Calendar.DATE, addDays);
+        ZonedDateTime zonedDateTime = LocalDateTime.now().atZone(ZoneId.systemDefault());
+        zonedDateTime = zonedDateTime.plusDays(addDays);
 
         Distances distances = Distances.createTestInstance(distance);
-        return CloseApproachData.createTestInstance(cal.getTime().getTime(), distances);
+        return CloseApproachData.createTestInstance(zonedDateTime.toInstant().toEpochMilli(), distances);
     }
 }

@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 
 /**
  * Receives a set of neo ids and rates them after earth proximity.
- * Retrieves the approach data for them and sorts to the n closest.
+ * Retrieves the approach data for them and sorts to the n closest in current week.
  * https://api.nasa.gov/neo/rest/v1/neo/
  * Alerts if someone is possibly hazardous.
  */
@@ -38,7 +38,7 @@ public class ApproachDetector {
      * Get the n closest approaches in this period
      * @param limit - n
      */
-    public List<NearEarthObject> getClosestApproaches(int limit, List<String> nearEarthObjectIds) {
+    public List<NearEarthObject> getClosestApproachesInCurrentWeek(int limit, List<String> nearEarthObjectIds) {
         final Queue<NearEarthObject> neos = new ConcurrentLinkedQueue<>();
         nearEarthObjectIds.parallelStream().forEach(neoId -> {
             try {
@@ -50,7 +50,7 @@ public class ApproachDetector {
         });
         System.out.println("Received " + neos.size() + " neos, now sorting");
 
-        return getClosestInCurrentWeek(new ArrayList<>(neos), limit);
+        return getFilteredAndSortedApproaches(new ArrayList<>(neos), limit);
     }
 
     private NearEarthObject getNeoDetail(String neoId) throws IOException {
@@ -70,7 +70,7 @@ public class ApproachDetector {
      * @param limit specifies the size of the returned list
      * @return a list of the closest passing in current week
      */
-    public List<NearEarthObject> getClosestInCurrentWeek(List<NearEarthObject> neos, int limit) {
+    public List<NearEarthObject> getFilteredAndSortedApproaches(List<NearEarthObject> neos, int limit) {
         return neos.stream()
                 .filter(this::hasAnyApproachingInCurrentWeek)
                 .sorted(new VicinityComparator(dateUtils))
@@ -78,7 +78,7 @@ public class ApproachDetector {
                 .collect(Collectors.toList());
     }
 
-    public boolean hasAnyApproachingInCurrentWeek(NearEarthObject neo) {
+    private boolean hasAnyApproachingInCurrentWeek(NearEarthObject neo) {
         if(neo.getCloseApproachData() == null) {
             return false;
         }
