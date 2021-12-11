@@ -16,6 +16,13 @@ public class Distances implements Comparable<Distances> {
     @JsonProperty("miles")
     private Double miles;
 
+
+    public static Distances createTestInstance(Double kilometers) {
+        Distances instance = new Distances();
+        instance.kilometers = kilometers;
+        return instance;
+    }
+
     public Double getAstronomical() {
         return astronomical;
     }

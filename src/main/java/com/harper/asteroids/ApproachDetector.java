@@ -2,6 +2,7 @@ package com.harper.asteroids;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.harper.asteroids.model.NearEarthObject;
+import com.harper.asteroids.service.DateUtils;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
@@ -20,20 +21,20 @@ import java.util.stream.Collectors;
  */
 public class ApproachDetector {
     private static final String NEO_URL = "https://api.nasa.gov/neo/rest/v1/neo/";
-    private final List<String> nearEarthObjectIds;
     private final Client client;
     private final ObjectMapper mapper = new ObjectMapper();
+    private final DateUtils dateUtils;
 
-    public ApproachDetector(List<String> ids) {
-        this.nearEarthObjectIds = ids;
+    public ApproachDetector(DateUtils dateUtils) {
         this.client = ClientBuilder.newClient();
+        this.dateUtils = dateUtils;
     }
 
     /**
      * Get the n closest approaches in this period
      * @param limit - n
      */
-    public List<NearEarthObject> getClosestApproaches(int limit) {
+    public List<NearEarthObject> getClosestApproaches(int limit, List<String> nearEarthObjectIds) {
         List<NearEarthObject> neos = new ArrayList<>(limit);
         for(String id: nearEarthObjectIds) {
             try {
@@ -61,12 +62,22 @@ public class ApproachDetector {
      * @param limit specifies the size of the returned list
      * @return a list of the closest passing
      */
-    public static List<NearEarthObject> getClosest(List<NearEarthObject> neos, int limit) {
-        //TODO: Should ignore the passes that are not today/this week.
+    public List<NearEarthObject> getClosest(List<NearEarthObject> neos, int limit) {
         return neos.stream()
-                .filter(neo -> neo.getCloseApproachData() != null && ! neo.getCloseApproachData().isEmpty())
-                .sorted(new VicinityComparator())
+                .filter(this::doesNeoHasAnyApproachingInCurrentWeek)
+                .sorted(new VicinityComparator(dateUtils))
                 .limit(limit)
                 .collect(Collectors.toList());
     }
+
+    public boolean doesNeoHasAnyApproachingInCurrentWeek(NearEarthObject neo) {
+        if(neo.getCloseApproachData() == null) {
+            return false;
+        }
+
+        return neo.getCloseApproachData().stream()
+                .anyMatch(closeApproachData ->
+                        dateUtils.isDateInCurrentWeek(closeApproachData.getCloseApproachEpochDate()));
+    }
+
 }

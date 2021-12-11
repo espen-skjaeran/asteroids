@@ -29,6 +29,16 @@ public class CloseApproachData {
     @JsonProperty("orbiting_body")
     private String orbitingBody;
 
+    public static CloseApproachData createTestInstance(long epochDate, Distances missDistance) {
+        CloseApproachData instance = new CloseApproachData();
+        instance.closeApproachEpochDate = epochDate;
+        instance.relativeVelocity = new Velocities();
+        instance.missDistance = missDistance;
+        instance.orbitingBody = "";
+
+        return instance;
+    }
+
     public Date getCloseApproachDate() {
         return closeApproachDate;
     }

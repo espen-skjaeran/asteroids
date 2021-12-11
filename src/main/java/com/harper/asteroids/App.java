@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.harper.asteroids.model.CloseApproachData;
 import com.harper.asteroids.model.Feed;
 import com.harper.asteroids.model.NearEarthObject;
+import com.harper.asteroids.service.DateUtils;
 import org.glassfish.jersey.client.ClientConfig;
 
 import java.io.IOException;
@@ -40,9 +41,12 @@ public class App {
 
     private final ObjectMapper mapper = new ObjectMapper();
 
+    private final DateUtils dateUtils;
+
     public App() {
         ClientConfig configuration = new ClientConfig();
         client = ClientBuilder.newClient(configuration);
+        dateUtils = new DateUtils();
     }
 
     /**
@@ -63,13 +67,14 @@ public class App {
 
             try {
                 Feed neoFeed = mapper.readValue(content, Feed.class);
-                ApproachDetector approachDetector = new ApproachDetector(neoFeed.getAllObjectIds());
+                ApproachDetector approachDetector = new ApproachDetector(dateUtils);
 
-                List<NearEarthObject> closest =  approachDetector.getClosestApproaches(10);
+                List<NearEarthObject> closest =  approachDetector.getClosestApproaches(10, neoFeed.getAllObjectIds());
                 System.out.println("Hazard?   Distance(km)    When                             Name");
                 System.out.println("----------------------------------------------------------------------");
                 for(NearEarthObject neo: closest) {
                     Optional<CloseApproachData> closestPass = neo.getCloseApproachData().stream()
+                            .filter(closeApproachData -> dateUtils.isDateInCurrentWeek(closeApproachData.getCloseApproachEpochDate()))
                             .min(Comparator.comparing(CloseApproachData::getMissDistance));
 
                     if(closestPass.isEmpty()) continue;
