@@ -14,6 +14,7 @@ import java.io.IOException;
 
 import java.time.LocalDate;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import javax.ws.rs.client.Client;
@@ -35,7 +36,7 @@ public class App {
 
     private static final String NEO_FEED_URL = "https://api.nasa.gov/neo/rest/v1/feed";
 
-    protected static String API_KEY = "DEMO_KEY";
+    private final String apiKey;
 
     private final Client client;
 
@@ -47,6 +48,14 @@ public class App {
         ClientConfig configuration = new ClientConfig();
         client = ClientBuilder.newClient(configuration);
         dateUtils = new DateUtils();
+
+        String apiKey = System.getenv("API_KEY");
+        if(apiKey != null && !apiKey.isBlank()) {
+            this.apiKey = apiKey;
+        }
+        else {
+            this.apiKey = "DEMO_KEY";
+        }
     }
 
     /**
@@ -58,7 +67,7 @@ public class App {
                 .target(NEO_FEED_URL)
                 .queryParam("start_date",  today.toString())
                 .queryParam("end_date", today.toString())
-                .queryParam("api_key", API_KEY)
+                .queryParam("api_key", apiKey)
                 .request(MediaType.APPLICATION_JSON)
                 .get();
         System.out.println("Got response: " + response);
@@ -67,7 +76,7 @@ public class App {
 
             try {
                 Feed neoFeed = mapper.readValue(content, Feed.class);
-                ApproachDetector approachDetector = new ApproachDetector(dateUtils);
+                ApproachDetector approachDetector = new ApproachDetector(dateUtils, apiKey);
 
                 List<NearEarthObject> closest =  approachDetector.getClosestApproaches(10, neoFeed.getAllObjectIds());
                 System.out.println("Hazard?   Distance(km)    When                             Name");
@@ -82,7 +91,7 @@ public class App {
                     System.out.printf("%s       %12.3f  %s    %s%n",
                             (neo.isPotentiallyHazardous() ? "!!!" : " - "),
                             closestPass.get().getMissDistance().getKilometers(),
-                            closestPass.get().getCloseApproachDateTime(),
+                            new Date(closestPass.get().getCloseApproachEpochDate()),
                             neo.getName()
                             );
                 }
@@ -98,10 +107,6 @@ public class App {
 
 
     public static void main(String[] args) {
-        String apiKey = System.getenv("API_KEY");
-        if(apiKey != null && !apiKey.isBlank()) {
-            API_KEY = apiKey;
-        }
         new App().checkForAsteroids();
     }
 }

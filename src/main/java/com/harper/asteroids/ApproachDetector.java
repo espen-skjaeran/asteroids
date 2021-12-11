@@ -11,6 +11,8 @@ import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.stream.Collectors;
 
 /**
@@ -24,10 +26,12 @@ public class ApproachDetector {
     private final Client client;
     private final ObjectMapper mapper = new ObjectMapper();
     private final DateUtils dateUtils;
+    private final String apiKey;
 
-    public ApproachDetector(DateUtils dateUtils) {
+    public ApproachDetector(DateUtils dateUtils, String apiKey) {
         this.client = ClientBuilder.newClient();
         this.dateUtils = dateUtils;
+        this.apiKey = apiKey;
     }
 
     /**
@@ -35,42 +39,46 @@ public class ApproachDetector {
      * @param limit - n
      */
     public List<NearEarthObject> getClosestApproaches(int limit, List<String> nearEarthObjectIds) {
-        List<NearEarthObject> neos = new ArrayList<>(limit);
-        for(String id: nearEarthObjectIds) {
+        final Queue<NearEarthObject> neos = new ConcurrentLinkedQueue<>();
+        nearEarthObjectIds.parallelStream().forEach(neoId -> {
             try {
-                System.out.println("Check passing of object " + id);
-                Response response = client
-                    .target(NEO_URL + id)
-                    .queryParam("api_key", App.API_KEY)
-                    .request(MediaType.APPLICATION_JSON)
-                    .get();
-
-                NearEarthObject neo = mapper.readValue(response.readEntity(String.class), NearEarthObject.class);
+                NearEarthObject neo = getNeoDetail(neoId);
                 neos.add(neo);
             } catch (IOException e) {
                 System.err.println("Failed scanning for asteroids: " + e);
             }
-        }
+        });
         System.out.println("Received " + neos.size() + " neos, now sorting");
 
-        return getClosest(neos, limit);
+        return getClosestInCurrentWeek(new ArrayList<>(neos), limit);
+    }
+
+    private NearEarthObject getNeoDetail(String neoId) throws IOException {
+        System.out.println("Check passing of object " + neoId);
+        Response response = client
+                .target(NEO_URL + neoId)
+                .queryParam("api_key", apiKey)
+                .request(MediaType.APPLICATION_JSON)
+                .get();
+
+        return mapper.readValue(response.readEntity(String.class), NearEarthObject.class);
     }
 
     /**
      * Get the closest passing.
      * @param neos the NearEarthObjects
      * @param limit specifies the size of the returned list
-     * @return a list of the closest passing
+     * @return a list of the closest passing in current week
      */
-    public List<NearEarthObject> getClosest(List<NearEarthObject> neos, int limit) {
+    public List<NearEarthObject> getClosestInCurrentWeek(List<NearEarthObject> neos, int limit) {
         return neos.stream()
-                .filter(this::doesNeoHasAnyApproachingInCurrentWeek)
+                .filter(this::hasAnyApproachingInCurrentWeek)
                 .sorted(new VicinityComparator(dateUtils))
                 .limit(limit)
                 .collect(Collectors.toList());
     }
 
-    public boolean doesNeoHasAnyApproachingInCurrentWeek(NearEarthObject neo) {
+    public boolean hasAnyApproachingInCurrentWeek(NearEarthObject neo) {
         if(neo.getCloseApproachData() == null) {
             return false;
         }
@@ -79,5 +87,4 @@ public class ApproachDetector {
                 .anyMatch(closeApproachData ->
                         dateUtils.isDateInCurrentWeek(closeApproachData.getCloseApproachEpochDate()));
     }
-
 }

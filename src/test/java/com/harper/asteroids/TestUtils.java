@@ -4,15 +4,12 @@ import com.harper.asteroids.model.CloseApproachData;
 import com.harper.asteroids.model.Distances;
 
 import java.util.Calendar;
-import java.util.TimeZone;
 
 public class TestUtils {
 
     public CloseApproachData createCloseApproachData(int addDays, Double distance) {
 
-        TimeZone osloTimezone = TimeZone.getTimeZone("Europe/Oslo");
-
-        Calendar cal = Calendar.getInstance(osloTimezone);
+        Calendar cal = Calendar.getInstance();
         cal.add(Calendar.DATE, addDays);
 
         Distances distances = Distances.createTestInstance(distance);

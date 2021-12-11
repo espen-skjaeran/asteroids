@@ -23,7 +23,7 @@ public class TestApproachDetector {
         this.testUtils = new TestUtils();
         neo1 = mapper.readValue(getClass().getResource("/neo_example.json"), NearEarthObject.class);
         neo2 = mapper.readValue(getClass().getResource("/neo_example2.json"), NearEarthObject.class);
-        approachDetector = new ApproachDetector(new DateUtils());
+        approachDetector = new ApproachDetector(new DateUtils(), "apiKey");
     }
 
     @Test
@@ -38,11 +38,11 @@ public class TestApproachDetector {
 
         List<NearEarthObject> neos = List.of(neo1, neo2);
 
-        List<NearEarthObject> filtered = approachDetector.getClosest(neos, 1);
+        List<NearEarthObject> filtered = approachDetector.getClosestInCurrentWeek(neos, 1);
         assertEquals(1, filtered.size());
         assertEquals(neo2, filtered.get(0));
 
-        filtered = approachDetector.getClosest(neos, 2);
+        filtered = approachDetector.getClosestInCurrentWeek(neos, 2);
         assertEquals(2, filtered.size());
         assertEquals(neo2, filtered.get(0));
         assertEquals(neo1, filtered.get(1));
@@ -60,7 +60,7 @@ public class TestApproachDetector {
 
         List<NearEarthObject> neos = List.of(neo1, neo2);
 
-        List<NearEarthObject> filtered = approachDetector.getClosest(neos, 2);
+        List<NearEarthObject> filtered = approachDetector.getClosestInCurrentWeek(neos, 2);
         assertEquals(1, filtered.size());
         assertEquals(neo1, filtered.get(0));
     }
