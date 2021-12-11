@@ -13,10 +13,7 @@ import org.glassfish.jersey.client.ClientConfig;
 import java.io.IOException;
 
 import java.time.LocalDate;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.core.MediaType;
@@ -62,11 +59,15 @@ public class App {
      * Scan space for asteroids close to earth
      */
     private void checkForAsteroids() {
-        LocalDate today = LocalDate.now();
+        // if we also need the approach data of passed days of current week then
+        // we have to set startDate to dateUtils.getStartDateOfCurrentWeek()
+        // currently startDate is set to today.
+        LocalDate startDate = LocalDate.now();
+        LocalDate endDate = dateUtils.getEndDateOfCurrentWeek();
         Response response = client
                 .target(NEO_FEED_URL)
-                .queryParam("start_date",  today.toString())
-                .queryParam("end_date", today.toString())
+                .queryParam("start_date",  startDate)
+                .queryParam("end_date", endDate)
                 .queryParam("api_key", apiKey)
                 .request(MediaType.APPLICATION_JSON)
                 .get();
