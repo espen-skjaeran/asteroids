@@ -2,14 +2,14 @@ package com.harper.asteroids;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.harper.asteroids.model.NearEarthObject;
+import com.harper.asteroids.utils.DateUtil;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -62,9 +62,20 @@ public class ApproachDetector {
      * @return
      */
     public static List<NearEarthObject> getClosest(List<NearEarthObject> neos, int limit) {
-        //TODO: Should ignore the passes that are not today/this week.
+        //;TODO: Should ignore the passes that are not today/this week.
+        Date today = DateUtil.updateDate(new Date(), 0, 0, 0, 0);
+        int remainingDaysInWeek = Calendar.SATURDAY - DateUtil.getDayOfWeek(today) + 1;
+        Date lastDateOfTheWeek = DateUtil.getDateAfterInterval(today, remainingDaysInWeek, 0,0, 0, 0);
         return neos.stream()
-                .filter(neo -> neo.getCloseApproachData() != null && ! neo.getCloseApproachData().isEmpty())
+                .filter(neo ->
+                            neo.getCloseApproachData() != null &&
+                            ! neo.getCloseApproachData().isEmpty() &&
+                            neo.getCloseApproachData().stream().anyMatch(
+                                    closeApproachData ->
+                                            closeApproachData.getCloseApproachDateTime().after(today) &&
+                                            closeApproachData.getCloseApproachDateTime().before(lastDateOfTheWeek)
+                            )
+                        )
                 .sorted(new VicinityComparator())
                 .limit(limit)
                 .collect(Collectors.toList());
