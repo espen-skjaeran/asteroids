@@ -35,7 +35,8 @@ public class App {
 
     private static final String NEO_FEED_URL = "https://api.nasa.gov/neo/rest/v1/feed";
 
-    protected static String API_KEY = "DEMO_KEY";
+//    protected static String API_KEY = "DEMO_KEY";
+    protected static String API_KEY = "frzO3G4gp52yNlC2vAkgDBOwBydC5UHSUMLhb9wz";
 
     private Client client;
 
@@ -75,7 +76,7 @@ public class App {
                 System.out.println("Hazard?   Distance(km)    When                             Name");
                 System.out.println("----------------------------------------------------------------------");
                 for(NearEarthObject neo: closest) {
-                    Optional<CloseApproachData> closestPass = neo.getCloseApproachData().stream()
+                    Optional<CloseApproachData> closestPass = neo.getCloseApproachData().parallelStream()
                             .min(Comparator.comparing(CloseApproachData::getMissDistance));
 
                     if(closestPass.isEmpty()) continue;

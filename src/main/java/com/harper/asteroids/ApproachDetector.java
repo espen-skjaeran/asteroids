@@ -1,6 +1,7 @@
 package com.harper.asteroids;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.harper.asteroids.model.CloseApproachData;
 import com.harper.asteroids.model.NearEarthObject;
 
 import javax.ws.rs.client.Client;
@@ -73,7 +74,7 @@ public class ApproachDetector {
      */
     public static List<NearEarthObject> getClosest(List<NearEarthObject> neos, int limit) {
         //TODO: Should ignore the passes that are not today/this week.
-        return neos.stream()
+        return neos.parallelStream()
                 .filter(neo -> neo.getCloseApproachData() != null && ! neo.getCloseApproachData().isEmpty())
                 .filter(removeRedundant())
 //                .filter(ignoreRedundant())
@@ -98,7 +99,7 @@ public class ApproachDetector {
      * @return
      */
     private static Predicate<NearEarthObject> ignoreRedundant(){
-        return neo -> neo.getCloseApproachData().stream()
+        return neo -> neo.getCloseApproachData().parallelStream()
                 .anyMatch(thisNeo -> ((thisNeo.getCloseApproachEpochDate() / 1000) >= today) &&
                         ((thisNeo.getCloseApproachEpochDate() / 1000) <= (today + WEEK_IN_SECS)));
 
