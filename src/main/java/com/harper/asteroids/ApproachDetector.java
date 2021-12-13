@@ -10,6 +10,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.*;
 import java.util.stream.Collectors;
 
 /**
@@ -23,10 +24,12 @@ public class ApproachDetector {
     private List<String> nearEarthObjectIds;
     private Client client;
     private ObjectMapper mapper = new ObjectMapper();
+    private ExecutorService executorService;
 
     public ApproachDetector(List<String> ids) {
         this.nearEarthObjectIds = ids;
         this.client = ClientBuilder.newClient();
+        this.executorService = Executors.newFixedThreadPool(5);
     }
 
     /**
@@ -34,25 +37,39 @@ public class ApproachDetector {
      * @param limit - n
      */
     public List<NearEarthObject> getClosestApproaches(int limit) {
-        List<NearEarthObject> neos = new ArrayList<>(limit);
+
+        List<CompletableFuture<NearEarthObject>> neos = new ArrayList<>(limit);
         for(String id: nearEarthObjectIds) {
-            try {
-                System.out.println("Check passing of object " + id);
-                Response response = client
-                    .target(NEO_URL + id)
-                    .queryParam("api_key", App.API_KEY)
-                    .request(MediaType.APPLICATION_JSON)
-                    .get();
-
-                NearEarthObject neo = mapper.readValue(response.readEntity(String.class), NearEarthObject.class);
-                neos.add(neo);
-            } catch (IOException e) {
-                System.err.println("Failed scanning for asteroids: " + e);
-            }
+            neos.add(
+                    CompletableFuture.supplyAsync(() -> {
+                    try {
+                        Response response = client.target(NEO_URL + id)
+                                .queryParam("api_key", App.API_KEY)
+                                .request(MediaType.APPLICATION_JSON)
+                                .get();
+                        return mapper.readValue(response.readEntity(String.class), NearEarthObject.class);
+                    }
+                    catch (IOException e) {
+                        System.err.println("Failed scanning for asteroids: " + e);
+                        throw new IllegalStateException(String.format("Couldn't fetch data from API for objectId %s", id));
+                    }
+                }, executorService)
+            );
+            System.out.println("Received " + neos.size() + " neos, now sorting");
         }
-        System.out.println("Received " + neos.size() + " neos, now sorting");
-
-        return getClosest(neos, limit);
+        CompletableFuture.allOf(neos.toArray(new CompletableFuture[nearEarthObjectIds.size()])).join();
+        List<NearEarthObject> nearEarthObjects = neos.stream().filter(CompletableFuture::isDone).map(neo -> {
+            try {
+                return neo.get();
+            }
+            catch (InterruptedException | ExecutionException e) {
+                e.printStackTrace();
+                System.err.println("Failed to get data for object " + e);
+                return null;
+                }
+            }
+        ).filter(Objects::nonNull).toList();
+        return getClosest(nearEarthObjects, limit);
     }
 
     /**
