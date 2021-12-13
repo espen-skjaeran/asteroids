@@ -18,6 +18,8 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZoneOffset;
 
+import java.util.concurrent.CompletableFuture;
+
 /**
  * Receives a set of neo ids and rates them after earth proximity.
  * Retrieves the approach data for them and sorts to the n closest.
@@ -45,6 +47,7 @@ public class ApproachDetector {
      * @param limit - n
      */
     public List<NearEarthObject> getClosestApproaches(int limit) {
+//        List<CompletableFuture<NearEarthObject>> neos = new ArrayList<>(limit);
         List<NearEarthObject> neos = new ArrayList<>(limit);
         for(String id: nearEarthObjectIds) {
             try {
