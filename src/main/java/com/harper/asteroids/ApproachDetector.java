@@ -106,7 +106,6 @@ public class ApproachDetector {
         return neos.parallelStream()
                 .filter(neo -> neo.getCloseApproachData() != null && ! neo.getCloseApproachData().isEmpty())
                 .filter(removeRedundant())
-//                .filter(ignoreRedundant())
                 .sorted(new VicinityComparator())
                 .limit(limit)
                 .collect(Collectors.toList());
@@ -120,17 +119,5 @@ public class ApproachDetector {
     private static Predicate<NearEarthObject> removeRedundant(){
         return neo -> neo.getCloseApproachData().removeIf(thisNeo -> ((thisNeo.getCloseApproachDateTime().getTime() / 1000) < today) ||
                 ((thisNeo.getCloseApproachDateTime().getTime() / 1000) > (today + WEEK_IN_SECS)));
-    }
-
-    /**
-     * Selects only the near earth objects which have at least one close approach data that happen this week.
-     * Fixes the problem "permanently :)"
-     * @return Predicate<NearEarthObject> to be used for filtering
-     */
-    private static Predicate<NearEarthObject> ignoreRedundant(){
-        return neo -> neo.getCloseApproachData().parallelStream()
-                .anyMatch(thisNeo -> ((thisNeo.getCloseApproachEpochDate() / 1000) >= today) &&
-                        ((thisNeo.getCloseApproachEpochDate() / 1000) <= (today + WEEK_IN_SECS)));
-
     }
 }

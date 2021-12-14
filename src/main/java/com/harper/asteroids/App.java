@@ -16,10 +16,15 @@ import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Predicate;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+
+import java.time.LocalTime;
+import java.time.ZoneOffset;
+
 
 /**
  * Main app. Gets the list of closest asteroids from NASA at
@@ -77,6 +82,7 @@ public class App {
                 System.out.println("----------------------------------------------------------------------");
                 for(NearEarthObject neo: closest) {
                     Optional<CloseApproachData> closestPass = neo.getCloseApproachData().parallelStream()
+//                            .filter(ignoreRedundant())
                             .min(Comparator.comparing(CloseApproachData::getMissDistance));
 
                     if(closestPass.isEmpty()) continue;
@@ -96,6 +102,21 @@ public class App {
             System.err.println("Failed querying feed, got " + response.getStatus() + " " + response.getStatusInfo());
         }
 
+    }
+
+    private static final long WEEK_IN_SECS = 604800;
+    private static final LocalDate date = LocalDate.now();
+    private static final LocalTime time = LocalTime.now();
+    private static final long today_secs = date.toEpochSecond(time, ZoneOffset.of("Z"));
+
+    /**
+     * Selects only the near earth objects which have at least one close approach data that happen this week.
+     * Fixes the problem "permanently :)"
+     * @return Predicate<NearEarthObject> to be used for filtering
+     */
+    private static Predicate<CloseApproachData> ignoreRedundant(){
+        return (thisNeo -> ((thisNeo.getCloseApproachEpochDate() / 1000) >= today_secs) &&
+                        ((thisNeo.getCloseApproachEpochDate() / 1000) <= (today_secs + WEEK_IN_SECS)));
     }
 
 
