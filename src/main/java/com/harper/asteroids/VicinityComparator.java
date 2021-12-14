@@ -11,10 +11,10 @@ public class VicinityComparator implements Comparator<NearEarthObject> {
 
     public int compare(NearEarthObject neo1, NearEarthObject neo2) {
 
-        Optional<Distances> neo1ClosestPass = neo1.getCloseApproachData().stream()
+        Optional<Distances> neo1ClosestPass = neo1.getCloseApproachData().parallelStream()
                 .min(Comparator.comparing(CloseApproachData::getMissDistance))
                 .map(min -> min.getMissDistance());
-        Optional<Distances> neo2ClosestPass = neo2.getCloseApproachData().stream()
+        Optional<Distances> neo2ClosestPass = neo2.getCloseApproachData().parallelStream()
                 .min(Comparator.comparing(CloseApproachData::getMissDistance))
                 .map(min -> min.getMissDistance());
 
