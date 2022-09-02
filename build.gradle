@@ -24,7 +24,7 @@ dependencies {
     implementation 'com.google.guava:guava:28.0-jre'
 
     implementation 'org.glassfish.jersey.core:jersey-common:2.27'
-    implementation 'org.glassfish.jersey.core:jersey-client:2.27'
+    implementation 'org.glassfish.jersey.core:jersey-client:3.0.8'
     implementation 'com.fasterxml.jackson.core:jackson-annotations:2.9.5'
     implementation 'org.glassfish.jersey.media:jersey-media-json-jackson:2.27'
     implementation 'org.glassfish.jersey.media:jersey-media-json-jackson:2.27'
