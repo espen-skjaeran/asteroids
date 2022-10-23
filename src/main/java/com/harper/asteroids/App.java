@@ -13,6 +13,8 @@ import org.glassfish.jersey.client.ClientConfig;
 import java.io.IOException;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -35,7 +37,7 @@ public class App {
 
     private static final String NEO_FEED_URL = "https://api.nasa.gov/neo/rest/v1/feed";
 
-    protected static String API_KEY = "DEMO_KEY";
+    protected static String API_KEY = "KvqsBhocTLO3e3kgOdUcNWCxndWMeCF9OWk5TsfK";
 
     private Client client;
 
@@ -53,19 +55,20 @@ public class App {
      * Scan space for asteroids close to earth
      */
     private void checkForAsteroids() {
-        LocalDate today = LocalDate.now();
+
+        LocalDate endDate = LocalDate.now();
+        var startDate=endDate.minusDays(1);
         Response response = client
                 .target(NEO_FEED_URL)
-                .queryParam("start_date",  today.toString())
-                .queryParam("end_date", today.toString())
+                .queryParam("start_date",  startDate.toString())
+                .queryParam("end_date", endDate.toString())
                 .queryParam("api_key", API_KEY)
                 .request(MediaType.APPLICATION_JSON)
                 .get();
         System.out.println("Got response: " + response);
         if(response.getStatus() == Response.Status.OK.getStatusCode()) {
-            ObjectMapper mapper = new ObjectMapper();
+         //   ObjectMapper mapper = new ObjectMapper();
             String content = response.readEntity(String.class);
-
 
             try {
                 Feed neoFeed = mapper.readValue(content, Feed.class);
@@ -75,9 +78,10 @@ public class App {
                 System.out.println("Hazard?   Distance(km)    When                             Name");
                 System.out.println("----------------------------------------------------------------------");
                 for(NearEarthObject neo: closest) {
-                    Optional<CloseApproachData> closestPass = neo.getCloseApproachData().stream()
-                            .min(Comparator.comparing(CloseApproachData::getMissDistance));
-
+                    Optional<CloseApproachData> closestPass= neo.getCloseApproachData().stream()
+                    . filter(closeApproachData -> closeApproachData.getCloseApproachDateTime().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime().isAfter(LocalDateTime.now())
+                            && closeApproachData.getCloseApproachDateTime().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime().isBefore(LocalDateTime.now().plusDays(7)))
+                    .findFirst();
                     if(closestPass.isEmpty()) continue;
 
                     System.out.println(String.format("%s       %12.3f  %s    %s",

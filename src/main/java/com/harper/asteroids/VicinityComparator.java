@@ -18,12 +18,14 @@ public class VicinityComparator implements Comparator<NearEarthObject> {
                 .min(Comparator.comparing(CloseApproachData::getMissDistance))
                 .map(min -> min.getMissDistance());
 
-        if(neo1ClosestPass.isPresent()) {
-            if(neo2ClosestPass.isPresent()) {
-                return neo1ClosestPass.get().compareTo(neo2ClosestPass.get());
-            }
-            else return 1;
-        }
-        else return -1;
+        return !neo1ClosestPass.isPresent()?-1:!neo2ClosestPass.isPresent()?1:neo1ClosestPass.get().compareTo(neo2ClosestPass.get());
+
+//        if(neo1ClosestPassisPresent()) {
+//            if(neo2ClosestPass.isPresent()) {
+//                return neo1ClosestPass.get().compareTo(neo2ClosestPass.get());
+//            }
+//            else return 1;
+//        }
+//        else return -1;
     }
 }

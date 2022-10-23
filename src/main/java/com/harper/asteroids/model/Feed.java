@@ -10,7 +10,7 @@ import java.util.stream.Collectors;
 /**
  * Response for a feed query of Neos.
  */
-@JsonIgnoreProperties(ignoreUnknown = true)
+//@JsonIgnoreProperties(ignoreUnknown = true)
 public class Feed {
     @JsonProperty("element_count")
     private int elementCount;
