@@ -3,15 +3,17 @@ package com.harper.asteroids.model;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.ComparisonChain;
 
+import java.util.Comparator;
 import java.util.Date;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class CloseApproachData {
+public class CloseApproachData implements Comparable<CloseApproachData> {
 
     @JsonProperty("close_approach_date")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
-    private Date closeApproachDate;
+    private static Date closeApproachDate;
 
     @JsonProperty("close_approach_date_full")
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MMM-dd hh:mm")
@@ -29,7 +31,7 @@ public class CloseApproachData {
     @JsonProperty("orbiting_body")
     private String orbitingBody;
 
-    public Date getCloseApproachDate() {
+    public static Date getCloseApproachDate() {
         return closeApproachDate;
     }
 
@@ -52,4 +54,13 @@ public class CloseApproachData {
     public String getOrbitingBody() {
         return orbitingBody;
     }
+
+    @Override
+    public int compareTo(CloseApproachData other) {
+        return ComparisonChain.start().
+                compare(this.closeApproachDateTime, other.closeApproachDateTime).
+                compare(this.missDistance.getKilometers(), other.missDistance.getKilometers()).
+                result();
+    }
+
 }

@@ -1,5 +1,6 @@
 package com.harper.asteroids;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.harper.asteroids.model.NearEarthObject;
 import org.junit.Before;
@@ -18,6 +19,7 @@ public class TestVicinityComparator {
 
     @Before
     public void setUp() throws IOException {
+        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
         neo1 = mapper.readValue(getClass().getResource("/neo_example.json"), NearEarthObject.class);
         neo2 = mapper.readValue(getClass().getResource("/neo_example2.json"), NearEarthObject.class);
     }

@@ -10,7 +10,7 @@ import java.util.List;
  *
  * TODO: why the h*** must I add this annotation to ignore unknown properties when I set it on ObjectMapper?
  */
-@JsonIgnoreProperties(ignoreUnknown = true)
+//@JsonIgnoreProperties(ignoreUnknown = true)
 public class NearEarthObject {
 
     @JsonProperty("id")
@@ -55,8 +55,35 @@ public class NearEarthObject {
     public List<CloseApproachData> getCloseApproachData() {
         return closeApproachData;
     }
-
     public boolean isSentryObject() {
         return isSentryObject;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setNplUrl(String nplUrl) {
+        this.nplUrl = nplUrl;
+    }
+
+    public void setAbsoluteMagnitude(double absoluteMagnitude) {
+        this.absoluteMagnitude = absoluteMagnitude;
+    }
+
+    public void setPotentiallyHazardous(boolean potentiallyHazardous) {
+        this.potentiallyHazardous = potentiallyHazardous;
+    }
+
+    public void setCloseApproachData(List<CloseApproachData> closeApproachData) {
+        this.closeApproachData = closeApproachData;
+    }
+
+    public void setSentryObject(boolean sentryObject) {
+        isSentryObject = sentryObject;
     }
 }
